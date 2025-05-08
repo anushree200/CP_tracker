@@ -14,19 +14,62 @@ body{
     padding: 0;
     background-color: #008080;
 }
+.main-container {
+    display: flex;
+    width: 100%;
+    min-height: calc(100vh - 60px); 
+}
 .problems-list {
-    max-width: 800px;
-    margin: 20px auto;
-    padding: 0 20px;
+    width: 75%;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.Filter{
+    width: 25%;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.filters {
+    background-color:  #554791;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
+.filters h2 {
+    margin-top: 0;
+    font-size: 1.5em;
+    color: #333;
+}
+
+.filters label {
+    font-weight: bold;
+    color: #333;
+}
+
+.filters select,
+.filters textarea {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    background-color:  #554791;
+    color: #333;
+}
+
+.filters textarea {
+    height: 100px;
+    resize: vertical;
+}
 ul {
     list-style-type: none;
     padding: 0;
 }
 
 li {
-    background-color: white;
+    background-color: #554791;
     margin: 10px 0;
     padding: 15px;
     border-radius: 5px;
