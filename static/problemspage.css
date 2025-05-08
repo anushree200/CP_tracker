@@ -1,0 +1,43 @@
+.top-bar{
+    background-color: #554791;
+    padding: 15px;
+    color: #191970;
+    text-align: center;
+    border-top-left-radius: 10%;
+    border-top-right-radius: 10%;
+    border-bottom-left-radius: 10%;
+    border-bottom-right-radius: 10%;
+}
+body{
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #008080;
+}
+.problems-list {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 0 20px;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    background-color: white;
+    margin: 10px 0;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+h3 {
+    margin: 0 0 10px;
+    color: #333;
+}
+
+p {
+    margin: 5px 0;
+}
