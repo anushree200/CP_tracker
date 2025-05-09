@@ -124,6 +124,7 @@ def submit_code(problem_id):
 
     # Run the code for each test case
     results = []
+    all_correct=True
     for test_input, expected_output in zip(test_inputs, test_outputs):
         try:
             # Write the code to a temporary file
@@ -189,7 +190,10 @@ def submit_code(problem_id):
                 "error": str(e),
                 "verdict": "Error"
             })
-
+    cur.execute("UPDATE problems SET attempts = attempts + 1, solved = ? WHERE id = ?",
+                (1 if all_correct else 0, problem_id))
+    conn.commit()
+    conn.close()
     return jsonify({"results": results})
 
 @app.route('/newproblem')
@@ -262,17 +266,25 @@ def edit_problem(problem_id):
             test_inputs = request.form.get('test_inputs')
             test_outputs = request.form.get('test_outputs')
 
+            # Validate all fields are present
             if not all([title, description, points, topic, test_inputs, test_outputs]):
                 flash("All fields are required.", "error")
                 return render_template('edit_problem.html', problem=problem)
 
-            test_inputs = json.loads(test_inputs)
-            test_outputs = json.loads(test_outputs)
+            # Validate test_inputs and test_outputs are valid JSON
+            try:
+                test_inputs = json.loads(test_inputs) if test_inputs else []
+                test_outputs = json.loads(test_outputs) if test_outputs else []
+            except json.JSONDecodeError:
+                flash("Test inputs and outputs must be valid JSON.", "error")
+                return render_template('edit_problem.html', problem=problem)
 
+            # Validate test case length
             if len(test_inputs) < 3 or len(test_outputs) < 3:
                 flash("At least 3 test cases are required.", "error")
                 return render_template('edit_problem.html', problem=problem)
 
+            # Update the problem in the database
             conn = sqlite3.connect("problems.db")
             cur = conn.cursor()
             cur.execute("""
@@ -291,7 +303,5 @@ def edit_problem(problem_id):
             return render_template('edit_problem.html', problem=problem)
 
     return render_template('edit_problem.html', problem=problem)
-
-
 if __name__ == '__main__':
     app.run(debug=True)

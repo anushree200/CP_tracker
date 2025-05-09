@@ -31,9 +31,18 @@
                             <p><b>Statement:</b> {{ problem[2] }}</p>
                             <p><strong>Points:</strong> {{ problem[3] }}</p>
                         </a>
-                        <a href="/admin/login?redirect=/problem/{{ problem[0] }}/edit" style="position: absolute; top: 10px; right: 10px; color: #ffffff; font-size: 18px; z-index: 10;" title="Edit problem">
-                            <i class="fas fa-edit"></i>
-                        </a>
+                        <div style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center;">
+                            {% if problem[7] > 0 %}
+                                {% if problem[8] %}
+                                    <span style="width: 10px; height: 10px; background-color: green; border-radius: 50%; margin-right: 5px;" title="Problem Solved"></span>
+                                {% else %}
+                                    <span style="width: 10px; height: 10px; background-color: yellow; border-radius: 50%; margin-right: 5px;" title="Attempted but Not Solved"></span>
+                                {% endif %}
+                            {% endif %}
+                            <a href="/admin/login?redirect=/problem/{{ problem[0] }}/edit" style="color: #ffffff; font-size: 18px; z-index: 10;" title="Edit problem">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </div>
                     </li>
                 {% endfor %}
                 </ul>

@@ -76,6 +76,8 @@
             <textarea name="description" placeholder="Description" required>{{ problem[2] }}</textarea>
             <input type="text" name="points" value="{{ problem[3] }}" placeholder="Points" required>
             <input type="text" name="topic" value="{{ problem[4] if problem[4] else '' }}" placeholder="Topic">
+            <textarea name="test_inputs" placeholder='Test Inputs (JSON format, e.g. ["input1", "input2"])' required>{{ problem[5] }}</textarea>
+            <textarea name="test_outputs" placeholder='Test Outputs (JSON format, e.g. ["output1", "output2"])' required>{{ problem[6] }}</textarea>
             <button type="submit">Save Changes</button>
         </form>
         <a href="{{ url_for('frontpage') }}" style="display: block; text-align: center; margin-top: 10px; color: #1877a2;">Back to Problems</a>
