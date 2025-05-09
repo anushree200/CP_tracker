@@ -56,8 +56,9 @@ def problem_detail(problem_id):
 
     if problem is None:
         return "Problem not found", 404
-
-    return render_template("problemdetail.html", problem=problem)
+    test_inputs = json.loads(problem[5])
+    test_outputs = json.loads(problem[6])
+    return render_template("problemdetail.html", problem=problem, test_inputs=test_inputs,test_outputs=test_outputs)
 
 @app.route('/submit/<int:problem_id>', methods=['POST'])
 def submit_code(problem_id):

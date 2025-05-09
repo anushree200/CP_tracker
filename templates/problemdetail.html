@@ -27,7 +27,6 @@
             </div>
         {% endfor %}
 
-        <!-- Code Editor Section -->
         <h2>Submit Your Solution</h2>
         <label for="language">Select Language:</label><br>
         <select id="language">
@@ -46,14 +45,11 @@
         <textarea id="code">Write your code here</textarea><br><br>
         <button onclick="submitCode({{ problem[0] }})">Submit</button>
 
-        <!-- Results Section -->
         <div id="results" style="margin-top: 20px;"></div>
     </div>
 
-    <!-- Include CodeMirror JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/python/python.min.js"></script>
-    <!-- Include problemdetail.js -->
     <script src="{{ url_for('static', filename='js/problemdetail.js') }}"></script>
     
 </body>
