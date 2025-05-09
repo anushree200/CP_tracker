@@ -49,3 +49,7 @@ function clearFilters() {
     document.getElementById('keyword').value = '';
     filterProblems();
 }
+
+function addproblem() {
+    window.location.href = '/newproblem';
+}

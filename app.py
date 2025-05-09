@@ -156,5 +156,50 @@ def submit_code(problem_id):
 
     return jsonify({"results": results})
 
+@app.route('/newproblem')
+def newproblem():
+    return render_template("newproblem.html")
+
+@app.route('/addproblem', methods=['POST'])
+def add_problem():
+    try:
+        title = request.form.get('title')
+        description = request.form.get('description')
+        points = request.form.get('points')
+        topic = request.form.get('topic')
+        test_inputs = request.form.get('test_inputs')
+        test_outputs = request.form.get('test_outputs')
+
+        # Validate inputs
+        if not all([title, description, points, topic, test_inputs, test_outputs]):
+            return jsonify({"success": False, "error": "All fields are required"}), 400
+
+        # Parse test cases
+        test_inputs = json.loads(test_inputs)
+        test_outputs = json.loads(test_outputs)
+
+        if len(test_inputs) < 3 or len(test_outputs) < 3:
+            return jsonify({"success": False, "error": "At least 3 test cases are required"}), 400
+
+        # Get the next problem ID
+        conn = sqlite3.connect("problems.db")
+        cur = conn.cursor()
+        cur.execute("SELECT MAX(id) FROM problems")
+        max_id = cur.fetchone()[0]
+        new_id = (max_id if max_id is not None else 0) + 1
+
+        # Insert the new problem into the database
+        cur.execute("""
+            INSERT INTO problems (id, title, description, points, topic, test_inputs, test_outputs)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (new_id, title, description, int(points), topic, json.dumps(test_inputs), json.dumps(test_outputs)))
+
+        conn.commit()
+        conn.close()
+
+        return jsonify({"success": True})
+
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 if __name__ == '__main__':
     app.run(debug=True)

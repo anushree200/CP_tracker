@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Problem - CP Tracker</title>
+    <link rel="stylesheet" href="/static/newproblem.css" />
+</head>
+<body>
+    <div class="top-bar">
+        <h1>Add New Problem</h1>
+        <a href="/" class="back-link">Back to Problems</a>
+    </div>
+    <div class="form-container">
+        <form id="new-problem-form" onsubmit="submitProblem(event)">
+            <label for="title">Problem Title:</label><br>
+            <input type="text" id="title" name="title" required><br><br>
+
+            <label for="description">Problem Statement:</label><br>
+            <textarea id="description" name="description" rows="5" required></textarea><br><br>
+
+            <label for="points">Points:</label><br>
+            <select id="points" name="points" required>
+                <option value="300">300</option>
+                <option value="400">400</option>
+                <option value="500">500</option>
+                <option value="600">600</option>
+                <option value="700">700</option>
+                <option value="800">800</option>
+                <option value="900">900</option>
+                <option value="1000">1000</option>
+                <option value="1100">1100</option>
+                <option value="1200">1200</option>
+                <option value="1300">1300</option>
+                <option value="1400">1400</option>
+            </select><br><br>
+
+            <label for="topic">Topic:</label><br>
+            <select id="topic" name="topic" required>
+                <option value="array">Array</option>
+                <option value="string">String</option>
+                <option value="math">Math</option>
+                <option value="dp">Dynamic Programming</option>
+            </select><br><br>
+
+            <h2>Test Cases (Minimum 3 Required)</h2>
+            <div id="test-cases">
+                <!-- Test Case 1 -->
+                <div class="test-case">
+                    <h3>Test Case 1</h3>
+                    <label for="test-input-1">Input:</label><br>
+                    <textarea id="test-input-1" name="test-input-1" rows="2" required></textarea><br>
+                    <label for="test-output-1">Expected Output:</label><br>
+                    <textarea id="test-output-1" name="test-output-1" rows="2" required></textarea><br><br>
+                </div>
+                <!-- Test Case 2 -->
+                <div class="test-case">
+                    <h3>Test Case 2</h3>
+                    <label for="test-input-2">Input:</label><br>
+                    <textarea id="test-input-2" name="test-input-2" rows="2" required></textarea><br>
+                    <label for="test-output-2">Expected Output:</label><br>
+                    <textarea id="test-output-2" name="test-output-2" rows="2" required></textarea><br><br>
+                </div>
+                <!-- Test Case 3 -->
+                <div class="test-case">
+                    <h3>Test Case 3</h3>
+                    <label for="test-input-3">Input:</label><br>
+                    <textarea id="test-input-3" name="test-input-3" rows="2" required></textarea><br>
+                    <label for="test-output-3">Expected Output:</label><br>
+                    <textarea id="test-output-3" name="test-output-3" rows="2" required></textarea><br><br>
+                </div>
+            </div>
+
+            <button type="submit">Submit Problem</button>
+        </form>
+    </div>
+    <script src="{{ url_for('static', filename='js/newproblem.js') }}"></script>
+</body>
+</html>
