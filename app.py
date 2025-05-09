@@ -7,7 +7,7 @@ app.secret_key = 'tl_cp_tracker'
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
     if 'admin' in session:
-        redirect_url = request.args.get('redirect', url_for('index'))  # Default to index if no redirect URL
+        redirect_url = request.args.get('redirect', url_for('frontpage'))  # Default to index if no redirect URL
         return redirect(redirect_url)
 
     if request.method == 'POST':
@@ -22,7 +22,7 @@ def admin_login():
 
         if result and result[0] == password:
             session['admin'] = username
-            redirect_url = request.args.get('redirect', url_for('index')) 
+            redirect_url = request.args.get('redirect', url_for('frontpage')) 
             flash('Login successful!', 'success')
             return redirect(redirect_url)
         else:
@@ -35,7 +35,7 @@ def admin_login():
 def admin_logout():
     session.pop('admin', None)
     flash('You have been logged out.', 'success')
-    return redirect(url_for('index'))
+    return redirect(url_for('frontpage'))
 
 
 @app.route('/')
@@ -237,5 +237,61 @@ def add_problem():
 
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/problem/<int:problem_id>/edit', methods=['GET', 'POST'])
+def edit_problem(problem_id):
+    if 'admin' not in session:
+        return redirect(url_for('admin_login', redirect=request.url))
+
+    conn = sqlite3.connect("problems.db")
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM problems WHERE id = ?", (problem_id,))
+    problem = cur.fetchone()
+    conn.close()
+
+    if problem is None:
+        flash("Problem not found.", "error")
+        return redirect(url_for('frontpage'))
+
+    if request.method == 'POST':
+        try:
+            title = request.form.get('title')
+            description = request.form.get('description')
+            points = request.form.get('points')
+            topic = request.form.get('topic')
+            test_inputs = request.form.get('test_inputs')
+            test_outputs = request.form.get('test_outputs')
+
+            if not all([title, description, points, topic, test_inputs, test_outputs]):
+                flash("All fields are required.", "error")
+                return render_template('edit_problem.html', problem=problem)
+
+            test_inputs = json.loads(test_inputs)
+            test_outputs = json.loads(test_outputs)
+
+            if len(test_inputs) < 3 or len(test_outputs) < 3:
+                flash("At least 3 test cases are required.", "error")
+                return render_template('edit_problem.html', problem=problem)
+
+            conn = sqlite3.connect("problems.db")
+            cur = conn.cursor()
+            cur.execute("""
+                UPDATE problems 
+                SET title = ?, description = ?, points = ?, topic = ?, test_inputs = ?, test_outputs = ?
+                WHERE id = ?
+            """, (title, description, int(points), topic, json.dumps(test_inputs), json.dumps(test_outputs), problem_id))
+            conn.commit()
+            conn.close()
+
+            flash("Problem updated successfully!", "success")
+            return redirect(url_for('frontpage'))
+
+        except Exception as e:
+            flash(f"Error updating problem: {str(e)}", "error")
+            return render_template('edit_problem.html', problem=problem)
+
+    return render_template('edit_problem.html', problem=problem)
+
+
 if __name__ == '__main__':
     app.run(debug=True)
