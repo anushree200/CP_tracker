@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CP - Problems</title>
     <link rel="stylesheet" href="/static/problemspage.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
     <div class="top-bar">
         <h1>Problem Statements</h1>
         <div class="new">
-        <button onclick="addproblem()">Add Problem</button>
+            <button onclick="addproblem()">Add Problem</button>
         </div>
     </div>
     <div class="main-container">
@@ -18,12 +19,15 @@
             {% if problems %}
                 <ul id="problems-list">
                 {% for problem in problems %}
-                    <li>
+                    <li style="position: relative;">
                         <a href="/problem/{{ problem[0] }}" style="text-decoration: none; color: inherit;">
-                        <p>{{ problem[0] }}</p>
-                        <h3>{{ problem[1] }}</h3>
-                        <p><b>Statement:</b> {{ problem[2] }}</p>
-                        <p><strong>Points:</strong> {{ problem[3] }}</p>
+                            <p>{{ problem[0] }}</p>
+                            <h3>{{ problem[1] }}</h3>
+                            <p><b>Statement:</b> {{ problem[2] }}</p>
+                            <p><strong>Points:</strong> {{ problem[3] }}</p>
+                        </a>
+                        <a href="/admin/login?redirect=/problem/{{ problem[0] }}/edit" style="position: absolute; top: 10px; right: 10px; color: #ffffff; font-size: 18px; z-index: 10;" title="Edit problem">
+                            <i class="fas fa-edit"></i>
                         </a>
                     </li>
                 {% endfor %}

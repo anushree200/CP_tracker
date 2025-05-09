@@ -22,6 +22,7 @@ function filterProblems() {
             if (data.length > 0) {
                 data.forEach(problem => {
                     const li = document.createElement('li');
+                    li.style.position = 'relative'; // Ensure position: relative for absolute positioning
                     li.innerHTML = `
                         <a href="/problem/${problem.id}" style="text-decoration: none; color: inherit;">
                             <p>ID: ${problem.id}</p>
@@ -29,6 +30,9 @@ function filterProblems() {
                             <p><b>Statement:</b> ${problem.description}</p>
                             <p><strong>Points:</strong> ${problem.points}</p>
                             <p><strong>Topic:</strong> ${problem.topic}</p>
+                        </a>
+                        <a href="/admin/login?redirect=/problem/${problem.id}/edit" style="position: absolute; top: 10px; right: 10px; color: #ffffff; font-size: 18px; z-index: 10;" title="Edit problem" aria-label="Edit problem ${problem.id}">
+                            <i class="fas fa-edit"></i>
                         </a>
                     `;
                     problemsList.appendChild(li);

@@ -113,3 +113,14 @@ p {
 .filter button:hover {
     background-color: #554791;
 }
+
+#problems-list li a .fas.fa-edit {
+    transition: color 0.2s; /* Smooth color transition on hover */
+}
+#problems-list li {
+    padding: 20px; /* Increase padding to avoid clipping */
+}
+#problems-list li a .fas.fa-edit:hover {
+    color: #cccccc; /* Lighter gray on hover for contrast */
+    cursor: pointer;
+}

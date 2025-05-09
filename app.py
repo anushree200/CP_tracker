@@ -1,7 +1,42 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify,session,flash,redirect,url_for
 import sqlite3,os,json,subprocess,tempfile
 
 app = Flask(__name__)
+app.secret_key = 'tl_cp_tracker'
+
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if 'admin' in session:
+        redirect_url = request.args.get('redirect', url_for('index'))  # Default to index if no redirect URL
+        return redirect(redirect_url)
+
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        conn = sqlite3.connect('admin.db')
+        cur = conn.cursor()
+        cur.execute('SELECT pwd FROM admin WHERE username = ?', (username,))
+        result = cur.fetchone()
+        conn.close()
+
+        if result and result[0] == password:
+            session['admin'] = username
+            redirect_url = request.args.get('redirect', url_for('index')) 
+            flash('Login successful!', 'success')
+            return redirect(redirect_url)
+        else:
+            flash('Invalid username or password', 'error')
+            return render_template('admin_login.html', redirect=request.args.get('redirect', ''))
+
+    return render_template('admin_login.html', redirect=request.args.get('redirect', ''))
+
+@app.route('/admin/logout')
+def admin_logout():
+    session.pop('admin', None)
+    flash('You have been logged out.', 'success')
+    return redirect(url_for('index'))
+
 
 @app.route('/')
 def frontpage():
