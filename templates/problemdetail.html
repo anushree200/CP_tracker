@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ problem[1] }} - CP Problem</title>
+    <link rel="stylesheet" href="/static/problemdetail.css" />
+    <!-- Include CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css" />
+</head>
+<body>
+    <div class="top-bar">
+        <h1>{{ problem[1] }}</h1>
+        <a href="/" class="back-link">Back to Problems</a>
+    </div>
+    <div class="problem-detail">
+        <p><strong>ID:</strong> {{ problem[0] }}</p>
+        <p><strong>Statement:</strong> {{ problem[2] }}</p>
+        <p><strong>Points:</strong> {{ problem[3] }}</p>
+        <p><strong>Topic:</strong> {{ problem[4] }}</p>
+
+        <h2>Sample Test Cases</h2>
+        {% for i in range(test_inputs|length) %}
+            <div class="test-case">
+                <h3>Example {{ i + 1 }}</h3>
+                <p><strong>Input:</strong> {{ test_inputs[i] }}</p>
+                <p><strong>Expected Output:</strong> {{ test_outputs[i] }}</p>
+            </div>
+        {% endfor %}
+
+        <!-- Code Editor Section -->
+        <h2>Submit Your Solution</h2>
+        <label for="language">Select Language:</label><br>
+        <select id="language">
+            <option value="Python">Python</option>
+            <option value="C++" disabled>C++ (Not Supported)</option>
+            <option value="Java" disabled>Java (Not Supported)</option>
+            <option value="C" disabled>C (Not Supported)</option>
+            <option value="C#" disabled>C# (Not Supported)</option>
+            <option value="Swift" disabled>Swift (Not Supported)</option>
+            <option value="JavaScript" disabled>JavaScript (Not Supported)</option>
+            <option value="TypeScript" disabled>TypeScript (Not Supported)</option>
+            <option value="Ruby" disabled>Ruby (Not Supported)</option>
+            <option value="Dart" disabled>Dart (Not Supported)</option>
+        </select><br><br>
+
+        <textarea id="code">Write your code here</textarea><br><br>
+        <button onclick="submitCode({{ problem[0] }})">Submit</button>
+
+        <!-- Results Section -->
+        <div id="results" style="margin-top: 20px;"></div>
+    </div>
+
+    <!-- Include CodeMirror JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/python/python.min.js"></script>
+    <!-- Include problemdetail.js -->
+    <script src="{{ url_for('static', filename='js/problemdetail.js') }}"></script>
+    
+</body>
+</html>
