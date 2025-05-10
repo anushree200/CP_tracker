@@ -29,10 +29,12 @@
         <div class="stat-box">
             <h3>Submission Accuracy</h3>
             {% if stats.total_submissions > 0 %}
-                <canvas id="submission-chart"></canvas>
-            {% else %}
-                <p>No submissions yet to display accuracy.</p>
-            {% endif %}
+    <canvas id="submission-chart" 
+            data-total-submissions="{{ stats.total_submissions }}" 
+            data-successful-submissions="{{ stats.successful_submissions }}"></canvas>
+{% else %}
+    <p>No submissions yet to display accuracy.</p>
+{% endif %}
         </div>
 
         <div class="stat-box">
@@ -71,5 +73,8 @@
         <a href="{{ url_for('frontpage') }}">Back to Problems</a>
     </div>
     
+</body>
+</html>
+    <script src="{{ url_for('static', filename='js/stats.js') }}"></script>
 </body>
 </html>
