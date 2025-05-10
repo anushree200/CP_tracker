@@ -33,7 +33,10 @@ body {
 .back-link:hover {
     text-decoration: underline;
 }
-
+.platformlink{
+    position: relative;
+    color: #333;
+}
 
 .problem-detail {
     max-width: 800px;
