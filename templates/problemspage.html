@@ -11,8 +11,10 @@
     <div class="top-bar">
         <h1>Problem Statements</h1>
         <div class="new">
-            <button onclick="addproblem()">Add Problem</button>
+            <button id="add" onclick="addproblem()">Add Problem</button>
+            <button id="stats" onclick="stats()">User Statistics</button>
         </div>
+        
         {% if session['admin'] %}
             <div style="position: absolute; top: 20px; left: 20px;">
                 <a href="{{ url_for('admin_logout') }}" style="color: #1877a2;">Logout ({{ session['admin'] }})</a>

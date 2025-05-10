@@ -71,3 +71,8 @@ function clearFilters() {
 function addproblem() {
     window.location.href = '/newproblem';
 }
+
+
+function stats() {
+    window.location.href = '/stats';
+}

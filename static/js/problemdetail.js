@@ -30,7 +30,6 @@ function submitCode(problemId) {
             return;
         }
 
-        // Summary of verdicts
         const allAccepted = data.results.every(result => result.verdict === "Accepted");
         resultsDiv.innerHTML = `<h3>Verdict Summary: <span class="${allAccepted ? 'accepted' : 'wrong-answer'}">${allAccepted ? 'All Test Cases Passed' : 'Failed'}</span></h3>`;
 

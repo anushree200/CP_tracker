@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Statistics</title>
+    <link rel="stylesheet" href="/static/stats.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="stats-container">
+        <h1>My Statistics</h1>
+
+        <div class="stat-box">
+            <h3>Total Submissions</h3>
+            <p>{{ stats.total_submissions }}</p>
+        </div>
+
+        <div class="stat-box">
+            <h3>Successful Submissions</h3>
+            <p>{{ stats.successful_submissions }}</p>
+        </div>
+
+        <div class="stat-box">
+            <h3>Success Percentage</h3>
+            <p>{{ stats.success_percentage }}%</p>
+        </div>
+
+        <div class="stat-box">
+            <h3>Submission Accuracy</h3>
+            {% if stats.total_submissions > 0 %}
+                <canvas id="submission-chart"></canvas>
+            {% else %}
+                <p>No submissions yet to display accuracy.</p>
+            {% endif %}
+        </div>
+
+        <div class="stat-box">
+            <h3>Submission History</h3>
+            {% if stats.submission_log %}
+                <table class="log-table">
+                    <thead>
+                        <tr>
+                            <th>Problem ID</th>
+                            <th>Title</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in stats.submission_log %}
+                            {% set parts = entry.strip().split(", ") %}
+                            {% set problem_id = parts[0].split(": ")[1] %}
+                            {% set title = parts[1].split(": ")[1] %}
+                            {% set time = parts[2].split(": ")[1] %}
+                            {% set status = parts[3].split(": ")[1] %}
+                            <tr>
+                                <td>{{ problem_id }}</td>
+                                <td>{{ title }}</td>
+                                <td>{{ time }}</td>
+                                <td>{{ status }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No submissions yet.</p>
+            {% endif %}
+        </div>
+
+        <a href="{{ url_for('frontpage') }}">Back to Problems</a>
+    </div>
+    
+</body>
+</html>

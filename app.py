@@ -1,13 +1,13 @@
 from flask import Flask, render_template, request, jsonify,session,flash,redirect,url_for
-import sqlite3,os,json,subprocess,tempfile
+import sqlite3,os,json,subprocess,tempfile,datetime
 
 app = Flask(__name__)
 app.secret_key = 'tl_cp_tracker'
-
+f = open("C:\\Users\\aanuu\\Downloads\\TL_DEV_MINI\\CP_tracker\\log.txt", 'a')
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
     if 'admin' in session:
-        redirect_url = request.args.get('redirect', url_for('frontpage'))  # Default to index if no redirect URL
+        redirect_url = request.args.get('redirect', url_for('frontpage'))
         return redirect(redirect_url)
 
     if request.method == 'POST':
@@ -97,18 +97,15 @@ def problem_detail(problem_id):
 
 @app.route('/submit/<int:problem_id>', methods=['POST'])
 def submit_code(problem_id):
-    # Get the problem details
     conn = sqlite3.connect("problems.db")
     cur = conn.cursor()
     cur.execute("SELECT * FROM problems WHERE id = ?", (problem_id,))
     problem = cur.fetchone()
-    
 
     if problem is None:
         conn.close()
         return jsonify({"error": "Problem not found"}), 404
 
-    # Get the submitted code and language
     code = request.form.get('code')
     language = request.form.get('language')
 
@@ -116,37 +113,31 @@ def submit_code(problem_id):
         conn.close()
         return jsonify({"error": "Code or language not provided"}), 400
 
-    # For simplicity, only handle Python in this example
     if language != 'Python':
         return jsonify({"error": "Only Python is supported in this example"}), 400
 
-    # Parse test cases
-    test_inputs = json.loads(problem[5])  # test_inputs
-    test_outputs = json.loads(problem[6])  # test_outputs
-
-    # Run the code for each test case
+    test_inputs = json.loads(problem[5])
+    test_outputs = json.loads(problem[6])
     results = []
-    all_correct=True
+    all_correct = True
+    verdict = "Accepted"  # Default verdict, will update if there's an error
+
     for test_input, expected_output in zip(test_inputs, test_outputs):
         try:
-            # Write the code to a temporary file
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
-                f.write(code)
-                temp_file_name = f.name
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as temp_f:
+                temp_f.write(code)
+                temp_file_name = temp_f.name
 
-            # Run the code with the test input
             process = subprocess.run(
                 ['python', temp_file_name],
                 input=test_input,
                 text=True,
                 capture_output=True,
-                timeout=5  # 5-second timeout to prevent infinite loops
+                timeout=5
             )
 
-            # Clean up the temporary file
             os.remove(temp_file_name)
 
-            # Get the output and errors
             actual_output = process.stdout.strip()
             error = process.stderr.strip()
 
@@ -158,14 +149,14 @@ def submit_code(problem_id):
                     "error": error,
                     "verdict": "Runtime Error"
                 })
-                all_correct=False
+                all_correct = False
+                verdict = "Runtime Error"
             else:
-                # Compare the actual output with the expected output
                 if actual_output == expected_output:
                     verdict = "Accepted"
                 else:
                     verdict = "Wrong Answer"
-                    all_correct=False
+                    all_correct = False
                 
                 results.append({
                     "input": test_input,
@@ -184,7 +175,8 @@ def submit_code(problem_id):
                 "error": "Time Limit Exceeded",
                 "verdict": "Time Limit Exceeded"
             })
-            all_correct=False
+            all_correct = False
+            verdict = "Time Limit Exceeded"
         except Exception as e:
             if os.path.exists(temp_file_name):
                 os.remove(temp_file_name)
@@ -195,13 +187,25 @@ def submit_code(problem_id):
                 "error": str(e),
                 "verdict": "Error"
             })
-            all_correct=False
+            all_correct = False
+            verdict = f"Error: {str(e)}"
+
+    # Update the database
     cur.execute("UPDATE problems SET attempts = attempts + 1, solved = ? WHERE id = ?",
                 (1 if all_correct else 0, problem_id))
     conn.commit()
     conn.close()
-    return jsonify({"results": results})
 
+    # Log the submission details
+    timestamp = datetime.datetime.now().strftime('%H:%M:%S')
+    problem_id = problem[0]
+    problem_title = problem[1]
+    status = "Success" if all_correct else f"Failure ({verdict})"
+    log_entry = f"Problem ID: {problem_id}, Title: {problem_title}, Time: {timestamp}, Status: {status}\n"
+    f.write(log_entry)
+    f.flush()
+
+    return jsonify({"results": results})
 @app.route('/newproblem')
 def newproblem():
     return render_template("newproblem.html")
@@ -216,25 +220,21 @@ def add_problem():
         test_inputs = request.form.get('test_inputs')
         test_outputs = request.form.get('test_outputs')
 
-        # Validate inputs
         if not all([title, description, points, topic, test_inputs, test_outputs]):
             return jsonify({"success": False, "error": "All fields are required"}), 400
 
-        # Parse test cases
         test_inputs = json.loads(test_inputs)
         test_outputs = json.loads(test_outputs)
 
         if len(test_inputs) < 3 or len(test_outputs) < 3:
             return jsonify({"success": False, "error": "At least 3 test cases are required"}), 400
 
-        # Get the next problem ID
         conn = sqlite3.connect("problems.db")
         cur = conn.cursor()
         cur.execute("SELECT MAX(id) FROM problems")
         max_id = cur.fetchone()[0]
         new_id = (max_id if max_id is not None else 0) + 1
 
-        # Insert the new problem into the database
         cur.execute("""
             INSERT INTO problems (id, title, description, points, topic, test_inputs, test_outputs)
             VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -271,26 +271,18 @@ def edit_problem(problem_id):
             topic = request.form.get('topic')
             test_inputs = request.form.get('test_inputs')
             test_outputs = request.form.get('test_outputs')
-
-            # Validate all fields are present
             if not all([title, description, points, topic, test_inputs, test_outputs]):
                 flash("All fields are required.", "error")
                 return render_template('edit_problem.html', problem=problem)
-
-            # Validate test_inputs and test_outputs are valid JSON
             try:
                 test_inputs = json.loads(test_inputs) if test_inputs else []
                 test_outputs = json.loads(test_outputs) if test_outputs else []
             except json.JSONDecodeError:
                 flash("Test inputs and outputs must be valid JSON.", "error")
                 return render_template('edit_problem.html', problem=problem)
-
-            # Validate test case length
             if len(test_inputs) < 3 or len(test_outputs) < 3:
                 flash("At least 3 test cases are required.", "error")
                 return render_template('edit_problem.html', problem=problem)
-
-            # Update the problem in the database
             conn = sqlite3.connect("problems.db")
             cur = conn.cursor()
             cur.execute("""
@@ -309,5 +301,46 @@ def edit_problem(problem_id):
             return render_template('edit_problem.html', problem=problem)
 
     return render_template('edit_problem.html', problem=problem)
+
+@app.route('/stats')
+def stats():
+    conn = sqlite3.connect("problems.db")
+    cur = conn.cursor()
+
+    # Total submissions (sum of attempts across all problems)
+    cur.execute("SELECT SUM(attempts) FROM problems")
+    total_submissions = cur.fetchone()[0] or 0
+
+    # Number of successful submissions (count of problems where solved = 1)
+    cur.execute("SELECT COUNT(*) FROM problems WHERE solved = 1")
+    successful_submissions = cur.fetchone()[0]
+
+    # Success percentage (accuracy)
+    success_percentage = (successful_submissions / total_submissions * 100) if total_submissions > 0 else 0
+    success_percentage = round(success_percentage, 2)
+
+    failure_percentage = 100 - success_percentage if total_submissions > 0 else 0
+    failure_percentage = round(failure_percentage, 2)
+
+    conn.close()
+
+    # Read the submission log
+    submission_log = []
+    log_file_path = "C:\\Users\\aanuu\\Downloads\\TL_DEV_MINI\\CP_tracker\\log.txt"
+    if os.path.exists(log_file_path):
+        with open(log_file_path, "r") as log_file:
+            submission_log = log_file.readlines()
+
+    stats_data = {
+    "total_submissions": int(total_submissions),
+    "successful_submissions": int(successful_submissions),
+    "success_percentage": float(success_percentage),
+    "failure_percentage": float(failure_percentage),
+    "submission_log": submission_log
+    }
+
+    return render_template("stats.html", stats=stats_data)
+
+
 if __name__ == '__main__':
     app.run(debug=True)
