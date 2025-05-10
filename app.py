@@ -102,9 +102,10 @@ def submit_code(problem_id):
     cur = conn.cursor()
     cur.execute("SELECT * FROM problems WHERE id = ?", (problem_id,))
     problem = cur.fetchone()
-    conn.close()
+    
 
     if problem is None:
+        conn.close()
         return jsonify({"error": "Problem not found"}), 404
 
     # Get the submitted code and language
@@ -112,6 +113,7 @@ def submit_code(problem_id):
     language = request.form.get('language')
 
     if not code or not language:
+        conn.close()
         return jsonify({"error": "Code or language not provided"}), 400
 
     # For simplicity, only handle Python in this example
@@ -156,12 +158,14 @@ def submit_code(problem_id):
                     "error": error,
                     "verdict": "Runtime Error"
                 })
+                all_correct=False
             else:
                 # Compare the actual output with the expected output
                 if actual_output == expected_output:
                     verdict = "Accepted"
                 else:
                     verdict = "Wrong Answer"
+                    all_correct=False
                 
                 results.append({
                     "input": test_input,
@@ -180,6 +184,7 @@ def submit_code(problem_id):
                 "error": "Time Limit Exceeded",
                 "verdict": "Time Limit Exceeded"
             })
+            all_correct=False
         except Exception as e:
             if os.path.exists(temp_file_name):
                 os.remove(temp_file_name)
@@ -190,6 +195,7 @@ def submit_code(problem_id):
                 "error": str(e),
                 "verdict": "Error"
             })
+            all_correct=False
     cur.execute("UPDATE problems SET attempts = attempts + 1, solved = ? WHERE id = ?",
                 (1 if all_correct else 0, problem_id))
     conn.commit()
