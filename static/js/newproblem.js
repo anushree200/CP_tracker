@@ -5,18 +5,18 @@ function submitProblem(event) {
     const description = document.getElementById('description').value;
     const points = document.getElementById('points').value;
     const topic = document.getElementById('topic').value;
+    const platform = document.getElementById('platform').value;
+    const platformLink = document.getElementById('platform-link').value;
 
     // Collect test cases
-    const testInputs = [
-        document.getElementById('test-input-1').value,
-        document.getElementById('test-input-2').value,
-        document.getElementById('test-input-3').value
-    ];
-    const testOutputs = [
-        document.getElementById('test-output-1').value,
-        document.getElementById('test-output-2').value,
-        document.getElementById('test-output-3').value
-    ];
+    const testInputs = [];
+    const testOutputs = [];
+    for (let i = 1; i <= 3; i++) {
+        const input = document.getElementById(`test-input-${i}`).value;
+        const output = document.getElementById(`test-output-${i}`).value;
+        testInputs.push(input);
+        testOutputs.push(output);
+    }
 
     // Validate that all fields are filled
     if (!title || !description || !points || !topic || testInputs.some(input => !input) || testOutputs.some(output => !output)) {

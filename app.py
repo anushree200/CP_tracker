@@ -217,6 +217,8 @@ def add_problem():
         description = request.form.get('description')
         points = request.form.get('points')
         topic = request.form.get('topic')
+        platform = request.form.get('platform')
+        platform_link = request.form.get('platform_link')
         test_inputs = request.form.get('test_inputs')
         test_outputs = request.form.get('test_outputs')
 
@@ -236,9 +238,9 @@ def add_problem():
         new_id = (max_id if max_id is not None else 0) + 1
 
         cur.execute("""
-            INSERT INTO problems (id, title, description, points, topic, test_inputs, test_outputs)
+            INSERT INTO problems (id, title, description, points, topic, test_inputs, test_outputs,attempts,solved,platformname,link)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (new_id, title, description, int(points), topic, json.dumps(test_inputs), json.dumps(test_outputs)))
+        """, (new_id, title, description, int(points), topic, json.dumps(test_inputs), json.dumps(test_outputs),0,0, platform, platform_link))
 
         conn.commit()
         conn.close()
