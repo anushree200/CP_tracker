@@ -75,9 +75,13 @@ def filter_problems():
     conn.close()
 
     problems_list = [
-        {"id": p[0], "title": p[1], "description": p[2], "points": p[3], "topic": p[4]}
-        for p in problems
-    ]
+    {
+        "id": p[0], "title": p[1], "description": p[2],
+        "points": p[3], "topic": p[4],
+        "attempts": p[7], "solved": p[8]
+    }
+    for p in problems
+]
 
     return jsonify(problems_list)
 
