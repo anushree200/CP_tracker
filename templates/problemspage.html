@@ -9,7 +9,7 @@
 </head>
 <body>
     <div class="top-bar">
-        <h1>Problem Statements</h1>
+        <h1>Competitive Programming - Statements</h1>
         <div class="new">
             <button id="add" onclick="addproblem()">Add Problem</button>
             <button id="stats" onclick="stats()">User Statistics</button>
@@ -26,12 +26,20 @@
             {% if problems %}
                 <ul id="problems-list">
                 {% for problem in problems %}
-                <button class="note-icon" onclick="toggleNote('{{ problem[0] }}')">📝</button>
-                          <div id="note-box-{{ problem[0] }}" class="note-box" style="display:none;">
-                            <textarea id="note-text-{{ problem[0] }}" placeholder="Write your notes here..." rows="4" cols="40">{{ problem[11] }}</textarea>
-                            <button onclick="saveNote('{{ problem[0] }}')">Save</button>
-                            </div>
+                    
+
                     <li style="position: relative;">
+                        
+                        <button class="note-icon" onclick="openNote('{{ problem[0] }}')">📝</button>
+
+                        <div id="note-modal-{{ problem[0] }}" class="note-modal" style="display:none;">
+                        <div class="note-content">
+                        <span class="close" onclick="closeNote('{{ problem[0] }}')">&times;</span>
+                        <h3>Note for Problem {{ problem[0] }}</h3>
+                        <textarea id="note-text-{{ problem[0] }}" placeholder="Write your notes here..." rows="6">{{ problem[11] }}</textarea>
+                        <button onclick="saveNote('{{ problem[0] }}')">💾 Save</button>
+                        </div>
+                        </div>
                             <a href="/problem/{{ problem[0] }}" style="text-decoration: none; color: inherit;">
                             <p>{{ problem[0] }}</p>
                             <h3>{{ problem[1] }}</h3>

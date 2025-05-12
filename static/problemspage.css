@@ -30,7 +30,7 @@
     border-radius: 4px;
     cursor: pointer;
     font-size: 1em;
-    transition: background-color 0.3s; /* Smooth hover effect */
+    transition: background-color 0.3s;
 }
 body{
     font-family: Arial, sans-serif;
@@ -148,8 +148,61 @@ p {
     to { transform: scale(1); opacity: 1; }
 }
 .note-icon {
+    position: absolute;
+    top: 35px;
+    right: 2px;
     background: none;
     border: none;
     cursor: pointer;
     font-size: 1.2em;
+}
+
+.note-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.4);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.note-content {
+    background-color: #554791;
+    padding: 20px;
+    border-radius: 12px;
+    width: 400px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    position: relative;
+    margin-right: 50px;
+}
+
+.note-content textarea {
+    width: 100%;
+    padding: 5px;
+    resize: vertical;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+.note-content button {
+    margin-top: 10px;
+    padding: 8px 16px;
+    border: none;
+    background-color: #333;
+    color: #1877a2;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.note-content .close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 24px;
+    cursor: pointer;
 }

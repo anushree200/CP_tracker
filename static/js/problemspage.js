@@ -26,6 +26,7 @@ function filterProblems() {
                     const problemId = problem.id;
                     const attempts = problem.attempts || 0;
                     const solved = problem.solved || 0;
+                    const note = problem.note || '';
                     let dotHtml = '';
                     if (attempts > 0) {
                         if (solved) {
@@ -47,6 +48,15 @@ function filterProblems() {
                             <i class="fas fa-edit"></i>
                         </a>
                         </div>
+                        <button class="note-icon" onclick="openNote(${problemId})" title="Add/View Note">📝</button>
+                        <div id="note-modal-${problemId}" class="note-modal" style="display:none;">
+                            <div class="note-content">
+                                <span class="close" onclick="closeNote(${problemId})">×</span>
+                                <h3>Note for Problem ${problemId}</h3>
+                                <textarea id="note-text-${problemId}" placeholder="Write your notes here..." rows="6">${note}</textarea>
+                                <button onclick="saveNote(${problemId})">💾 Save</button>
+                            </div>
+                        </div>
                     `;
                 problemsList.appendChild(li);
             });
@@ -67,9 +77,12 @@ function clearFilters() {
     document.getElementById('keyword').value = '';
     filterProblems();
 }
-function toggleNote(id) {
-    const box = document.getElementById(`note-box-${id}`);
-    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+function openNote(id) {
+    document.getElementById(`note-modal-${id}`).style.display = 'flex';
+}
+
+function closeNote(id) {
+    document.getElementById(`note-modal-${id}`).style.display = 'none';
 }
 
 function saveNote(id) {
