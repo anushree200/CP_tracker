@@ -5,4 +5,3 @@
 - SQLite for the databases
 - HTML/CSS for frontend interface
 - JS for the frontend functionalities
-- Jinja2 for HTML templating with Flask
