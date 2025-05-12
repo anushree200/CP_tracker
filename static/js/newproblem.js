@@ -32,7 +32,8 @@ function submitProblem(event) {
     formData.append('topic', topic);
     formData.append('test_inputs', JSON.stringify(testInputs));
     formData.append('test_outputs', JSON.stringify(testOutputs));
-
+    formData.append('platform',platform)
+    formData.append('platform_link',platformLink)
     // Send the data to the server
     fetch('/addproblem', {
         method: 'POST',

@@ -67,7 +67,25 @@ function clearFilters() {
     document.getElementById('keyword').value = '';
     filterProblems();
 }
+function toggleNote(id) {
+    const box = document.getElementById(`note-box-${id}`);
+    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
 
+function saveNote(id) {
+    const note = document.getElementById(`note-text-${id}`).value;
+    fetch(`/save_note/${id}`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: `note=${encodeURIComponent(note)}`
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert('Note saved!');
+        }
+    });
+}
 function addproblem() {
     window.location.href = '/newproblem';
 }

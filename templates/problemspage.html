@@ -26,8 +26,13 @@
             {% if problems %}
                 <ul id="problems-list">
                 {% for problem in problems %}
+                <button class="note-icon" onclick="toggleNote('{{ problem[0] }}')">📝</button>
+                          <div id="note-box-{{ problem[0] }}" class="note-box" style="display:none;">
+                            <textarea id="note-text-{{ problem[0] }}" placeholder="Write your notes here..." rows="4" cols="40">{{ problem[11] }}</textarea>
+                            <button onclick="saveNote('{{ problem[0] }}')">Save</button>
+                            </div>
                     <li style="position: relative;">
-                        <a href="/problem/{{ problem[0] }}" style="text-decoration: none; color: inherit;">
+                            <a href="/problem/{{ problem[0] }}" style="text-decoration: none; color: inherit;">
                             <p>{{ problem[0] }}</p>
                             <h3>{{ problem[1] }}</h3>
                             <p><b>Statement:</b> {{ problem[2] }}</p>

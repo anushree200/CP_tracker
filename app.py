@@ -215,6 +215,17 @@ def submit_code(problem_id):
     f.flush()
 
     return jsonify({"results": results})
+
+@app.route('/save_note/<int:problem_id>', methods=['POST'])
+def save_note(problem_id):
+    note = request.form.get('note', '')
+    conn = sqlite3.connect("problems.db")
+    cur = conn.cursor()
+    cur.execute("UPDATE problems SET note = ? WHERE id = ?", (note, problem_id))
+    conn.commit()
+    conn.close()
+    return jsonify({"success": True})
+
 @app.route('/newproblem')
 def newproblem():
     return render_template("newproblem.html")
@@ -247,9 +258,9 @@ def add_problem():
         new_id = (max_id if max_id is not None else 0) + 1
 
         cur.execute("""
-            INSERT INTO problems (id, title, description, points, topic, test_inputs, test_outputs,attempts,solved,platformname,link)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (new_id, title, description, int(points), topic, json.dumps(test_inputs), json.dumps(test_outputs),0,0, platform, platform_link))
+            INSERT INTO problems (id, title, description, points, topic, test_inputs, test_outputs,attempts,solved,platformname,link,note)
+            VALUES (?, ?, ?, ?, ?, ?, ?,?,?,?,?,?)
+        """, (new_id, title, description, int(points), topic, json.dumps(test_inputs), json.dumps(test_outputs),0,0, platform, platform_link,'add your notes here'))
 
         conn.commit()
         conn.close()
