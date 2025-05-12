@@ -191,14 +191,11 @@ def submit_code(problem_id):
             all_correct = False
             verdict = f"Error: {str(e)}"
 
-    # Update the database
     cur.execute("UPDATE problems SET attempts = attempts + 1, solved = ? WHERE id = ?",
                 (1 if all_correct else 0, problem_id))
     conn.commit()
     conn.close()
 
-    # Log the submission details
-    # Log the submission details
     timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # Include date and time
     problem_id = problem[0]
     problem_title = problem[1]
