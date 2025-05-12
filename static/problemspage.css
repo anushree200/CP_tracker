@@ -1,6 +1,6 @@
 .top-bar {
     background-color: #554791;
-    padding: 20px; /* Increase padding to accommodate the buttons */
+    padding: 20px;
     color: #191970;
     text-align: center;
     border-top-left-radius: 20px;
@@ -17,13 +17,13 @@
     position: absolute;
     top: 20px;
     right: 20px;
-    display: flex; /* Use flexbox to align buttons side by side */
-    gap: 10px; /* Add spacing between the buttons */
+    display: flex;
+    gap: 10px;
 }
 
 .top-bar button {
     width: auto;
-    padding: 10px 15px; /* Add more horizontal padding for better appearance */
+    padding: 10px 15px;
     background-color: #333;
     color: #1877a2;
     border: none;
@@ -124,13 +124,13 @@ p {
 }
 
 #problems-list li a .fas.fa-edit {
-    transition: color 0.2s; /* Smooth color transition on hover */
+    transition: color 0.2s;
 }
 #problems-list li {
-    padding: 20px; /* Increase padding to avoid clipping */
+    padding: 20px;
 }
 #problems-list li a .fas.fa-edit:hover {
-    color: #cccccc; /* Lighter gray on hover for contrast */
+    color: #cccccc;
     cursor: pointer;
 }
 .note-box {

@@ -1,5 +1,5 @@
 function submitProblem(event) {
-    event.preventDefault(); // Prevent default form submission
+    event.preventDefault();
 
     const title = document.getElementById('title').value;
     const description = document.getElementById('description').value;
@@ -8,7 +8,6 @@ function submitProblem(event) {
     const platform = document.getElementById('platform').value;
     const platformLink = document.getElementById('platform-link').value;
 
-    // Collect test cases
     const testInputs = [];
     const testOutputs = [];
     for (let i = 1; i <= 3; i++) {
@@ -18,13 +17,11 @@ function submitProblem(event) {
         testOutputs.push(output);
     }
 
-    // Validate that all fields are filled
     if (!title || !description || !points || !topic || testInputs.some(input => !input) || testOutputs.some(output => !output)) {
         alert('Please fill in all fields, including all test cases.');
         return;
     }
 
-    // Prepare the data to send
     const formData = new FormData();
     formData.append('title', title);
     formData.append('description', description);
@@ -34,7 +31,7 @@ function submitProblem(event) {
     formData.append('test_outputs', JSON.stringify(testOutputs));
     formData.append('platform',platform)
     formData.append('platform_link',platformLink)
-    // Send the data to the server
+ 
     fetch('/addproblem', {
         method: 'POST',
         body: formData
@@ -43,7 +40,7 @@ function submitProblem(event) {
     .then(data => {
         if (data.success) {
             alert('Problem added successfully!');
-            window.location.href = '/'; // Redirect to the problems page
+            window.location.href = '/';
         } else {
             alert('Error adding problem: ' + (data.error || 'Unknown error'));
         }

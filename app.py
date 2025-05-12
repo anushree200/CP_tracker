@@ -206,7 +206,7 @@ def submit_code(problem_id):
     conn.commit()
     conn.close()
 
-    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # Include date and time
+    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     problem_id = problem[0]
     problem_title = problem[1]
     status = "Success" if all_correct else f"Failure ({verdict})"
@@ -329,24 +329,30 @@ def stats():
     conn = sqlite3.connect("problems.db")
     cur = conn.cursor()
 
-    # Total submissions (sum of attempts across all problems)
     cur.execute("SELECT SUM(attempts) FROM problems")
     total_submissions = cur.fetchone()[0] or 0
 
-    # Number of successful submissions (count of problems where solved = 1)
     cur.execute("SELECT COUNT(*) FROM problems WHERE solved = 1")
     successful_submissions = cur.fetchone()[0]
 
-    # Success percentage (accuracy)
     success_percentage = (successful_submissions / total_submissions * 100) if total_submissions > 0 else 0
     success_percentage = round(success_percentage, 2)
 
     failure_percentage = 100 - success_percentage if total_submissions > 0 else 0
     failure_percentage = round(failure_percentage, 2)
 
+    cur.execute("""
+    SELECT points, COUNT(*) 
+    FROM problems 
+    WHERE solved = 1 
+    GROUP BY points
+    """)
+    rows = cur.fetchall()
+    point_distribution = {str(point): count for point, count in rows}
+    point_distribution = json.dumps(point_distribution)
+
     conn.close()
 
-    # Read the submission log
     submission_log = []
     log_file_path = "C:\\Users\\aanuu\\Downloads\\TL_DEV_MINI\\CP_tracker\\log.txt"
     if os.path.exists(log_file_path):
@@ -358,7 +364,8 @@ def stats():
     "successful_submissions": int(successful_submissions),
     "success_percentage": float(success_percentage),
     "failure_percentage": float(failure_percentage),
-    "submission_log": submission_log
+    "submission_log": submission_log,
+    "point_distribution":point_distribution
     }
 
     return render_template("stats.html", stats=stats_data)

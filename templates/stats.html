@@ -29,12 +29,12 @@
         <div class="stat-box">
             <h3>Submission Accuracy</h3>
             {% if stats.total_submissions > 0 %}
-    <canvas id="submission-chart" 
+            <canvas id="submission-chart" 
             data-total-submissions="{{ stats.total_submissions }}" 
             data-successful-submissions="{{ stats.successful_submissions }}"></canvas>
-{% else %}
-    <p>No submissions yet to display accuracy.</p>
-{% endif %}
+            {% else %}
+                <p>No submissions yet to display accuracy.</p>
+            {% endif %}
         </div>
 
         <div class="stat-box">
@@ -68,7 +68,15 @@
             {% else %}
                 <p>No submissions yet.</p>
             {% endif %}
+            <h3>Problem Distribution by points</h3>
+            {% if stats.point_distribution %}
+                <canvas id="point-chart"
+                        data-distribution="{{ stats.point_distribution }}"></canvas>
+            {% else %}
+                <p>No point distribution data to display.</p>
+            {% endif %}
         </div>
+        
 
         <a href="{{ url_for('frontpage') }}">Back to Problems</a>
     </div>
