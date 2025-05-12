@@ -120,17 +120,18 @@ def submit_code(problem_id):
     test_outputs = json.loads(problem[6])
     results = []
     all_correct = True
-    verdict = "Accepted"  # Default verdict, will update if there's an error
+    verdict = "Accepted" 
 
     for test_input, expected_output in zip(test_inputs, test_outputs):
         try:
+            processed_input = test_input.replace(',', ' ')
             with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as temp_f:
                 temp_f.write(code)
                 temp_file_name = temp_f.name
 
             process = subprocess.run(
                 ['python', temp_file_name],
-                input=test_input,
+                input=processed_input,
                 text=True,
                 capture_output=True,
                 timeout=5
@@ -197,11 +198,12 @@ def submit_code(problem_id):
     conn.close()
 
     # Log the submission details
-    timestamp = datetime.datetime.now().strftime('%H:%M:%S')
+    # Log the submission details
+    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # Include date and time
     problem_id = problem[0]
     problem_title = problem[1]
     status = "Success" if all_correct else f"Failure ({verdict})"
-    log_entry = f"Problem ID: {problem_id}, Title: {problem_title}, Time: {timestamp}, Status: {status}\n"
+    log_entry = f"Problem ID: {problem_id}, Title: {problem_title}, Date and Time: {timestamp}, Status: {status}\n"
     f.write(log_entry)
     f.flush()
 
