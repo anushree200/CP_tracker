@@ -128,7 +128,7 @@ def submit_code(problem_id):
 
     for test_input, expected_output in zip(test_inputs, test_outputs):
         try:
-            processed_input = test_input.replace(',', ' ')
+            processed_input = test_input
             with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as temp_f:
                 temp_f.write(code)
                 temp_file_name = temp_f.name
@@ -195,8 +195,14 @@ def submit_code(problem_id):
             all_correct = False
             verdict = f"Error: {str(e)}"
 
-    cur.execute("UPDATE problems SET attempts = attempts + 1, solved = ? WHERE id = ?",
-                (1 if all_correct else 0, problem_id))
+    cur.execute("SELECT solved FROM problems WHERE id = ?", (problem_id,))
+    was_solved = cur.fetchone()[0]
+
+    if all_correct:
+        cur.execute("UPDATE problems SET attempts = attempts + 1, solved = 1 WHERE id = ?", (problem_id,))
+    elif was_solved == 0:
+        cur.execute("UPDATE problems SET attempts = attempts + 1 WHERE id = ?", (problem_id,))
+    
     conn.commit()
     conn.close()
 
