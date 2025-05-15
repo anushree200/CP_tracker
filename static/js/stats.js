@@ -95,9 +95,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
             });
-        } catch (error) {
-            console.error("Failed to parse point distribution or render chart:", error);
-        }
+        } 
         
     }
 });
