@@ -15,10 +15,6 @@ window.onload = function () {
             indentWithTabs: false
         });
 
-        if (typeof submitCode === 'undefined') {
-            console.error('submitCode function not found. Ensure problemdetail.js is loaded correctly.');
-            document.getElementById('results').innerHTML = '<p style="color: red;">Error: Submit functionality failed to load. Please refresh the page.</p>';
-        }
     }
 function submitCode(problemId) {
     const code = codeEditor.getValue();
@@ -65,12 +61,3 @@ function submitCode(problemId) {
         document.getElementById('results').innerHTML = '<p style="color: red;">Error submitting code.</p>';
     });
 }
-
-if (typeof CodeMirror === 'undefined') {
-            console.error('CodeMirror failed to load. Please check the CDN links.');
-            document.getElementById('results').innerHTML = '<p style="color: red;">Error: Code editor failed to load. Please refresh the page or check your internet connection.</p>';
-        }
-        if (typeof submitCode === 'undefined') {
-            console.error('submitCode function not found. Ensure problemdetail.js is loaded correctly.');
-            document.getElementById('results').innerHTML = '<p style="color: red;">Error: Submit functionality failed to load. Please refresh the page.</p>';
-        }
