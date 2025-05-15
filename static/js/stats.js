@@ -48,15 +48,15 @@ document.addEventListener('DOMContentLoaded', function () {
         console.error("Error rendering chart:", error);
     }
     const pointdist = document.getElementById('point-chart');
-    if (pointdis){
+    if (pointdist){
         const pointcontext = pointdist.getContext('2d');
-        const rawdist = pointdis.dataset.distribution;
+        const rawdist = pointdist.dataset.distribution;
         try{
             const dist = JSON.parse(rawdist);
             const labels = Object.keys(dist);
             const data = Object.values(dist);
             new Chart(pointcontext,{
-                type:'pie',
+                type:'bar',
              data: {
                     labels: labels,
                     datasets: [{
