@@ -1,9 +1,15 @@
 from flask import Flask, render_template, request, jsonify,session,flash,redirect,url_for
-import sqlite3,os,json,subprocess,tempfile,datetime
+import os,json,subprocess,tempfile,datetime
+from pymongo import MongoClient
 
 app = Flask(__name__)
 app.secret_key = 'tl_cp_tracker'
 f = open("C:\\Users\\aanuu\\Downloads\\TL_DEV_MINI\\CP_tracker\\log.txt", 'a')
+
+client = MongoClient("mongodb+srv://axxshxxe20:aoWa1PDYvM78QgtX@cluster0.czqryun.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+db = client['cp_tracker']
+admin_collection = db['admins']
+problems = db['problems']
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
     if 'admin' in session:
@@ -14,13 +20,9 @@ def admin_login():
         username = request.form.get('username')
         password = request.form.get('password')
 
-        conn = sqlite3.connect('admin.db')
-        cur = conn.cursor()
-        cur.execute('SELECT pwd FROM admin WHERE username = ?', (username,))
-        result = cur.fetchone()
-        conn.close()
+        admin = admin_collection.find_one({"username": username})
 
-        if result and result[0] == password:
+        if admin and admin["pwd"] == password:
             session['admin'] = username
             redirect_url = request.args.get('redirect', url_for('frontpage')) 
             flash('Login successful!', 'success')
@@ -40,12 +42,9 @@ def admin_logout():
 
 @app.route('/')
 def frontpage():
-    conn = sqlite3.connect("problems.db")
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM problems")
-    problems = cur.fetchall()
-    conn.close()
-    return render_template("problemspage.html", problems=problems)
+    problem_docs = list(problems.find())
+    return render_template("problemspage.html", problems=problem_docs)
+
 
 @app.route('/filter')
 def filter_problems():
@@ -53,89 +52,83 @@ def filter_problems():
     topic = request.args.get('topic', '')
     keywords = request.args.get('keywords', '')
 
-    query = "SELECT * FROM problems WHERE 1=1"
-    params = []
+    query = {}
 
     if points:
-        query += " AND points = ?"
-        params.append(int(points))
-    
+        query['points'] = int(points)
     if topic:
-        query += " AND topic = ?"
-        params.append(topic)
-    
+        query['topic'] = topic
     if keywords:
-        query += " AND title LIKE ?"
-        params.append(f"%{keywords}%")
+        query['title'] = {'$regex': keywords, '$options': 'i'}  # Case-insensitive match
 
-    conn = sqlite3.connect("problems.db")
-    cur = conn.cursor()
-    cur.execute(query, params)
-    problems = cur.fetchall()
-    conn.close()
+    filtered = problems.find(query)
 
     problems_list = [
-    {
-        "id": p[0], "title": p[1], "description": p[2],
-        "points": p[3], "topic": p[4],
-        "attempts": p[7], "solved": p[8]
-    }
-    for p in problems
-]
+        {
+            "id": str(p["_id"]),
+            "title": p["title"],
+            "description": p.get("description", ""),
+            "points": p.get("points", 0),
+            "topic": p.get("topic", ""),
+            "attempts": p.get("attempts", 0),
+            "solved": p.get("solved", 0)
+        }
+        for p in filtered
+    ]
 
     return jsonify(problems_list)
 
-@app.route('/problem/<int:problem_id>')
+from bson.objectid import ObjectId
+
+@app.route('/problem/<problem_id>')
 def problem_detail(problem_id):
-    conn = sqlite3.connect("problems.db")
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM problems WHERE id = ?", (problem_id,))
-    problem = cur.fetchone()
-    conn.close()
+    try:
+        problem = problems.find_one({"_id": ObjectId(problem_id)})
+    except:
+        return "Invalid problem ID", 400
 
     if problem is None:
         return "Problem not found", 404
-    test_inputs = json.loads(problem[5])
-    test_outputs = json.loads(problem[6])
-    return render_template("problemdetail.html", problem=problem, test_inputs=test_inputs,test_outputs=test_outputs)
 
-@app.route('/submit/<int:problem_id>', methods=['POST'])
+    test_inputs = json.loads(problem.get('test_inputs', '[]'))
+    test_outputs = json.loads(problem.get('test_outputs', '[]'))
+
+    return render_template("problemdetail.html", problem=problem, test_inputs=test_inputs, test_outputs=test_outputs)
+
+@app.route('/submit/<problem_id>', methods=['POST'])
 def submit_code(problem_id):
-    conn = sqlite3.connect("problems.db")
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM problems WHERE id = ?", (problem_id,))
-    problem = cur.fetchone()
+    try:
+        problem = problems.find_one({"_id": ObjectId(problem_id)})
+    except:
+        return jsonify({"error": "Invalid problem ID format"}), 400
 
     if problem is None:
-        conn.close()
         return jsonify({"error": "Problem not found"}), 404
 
     code = request.form.get('code')
     language = request.form.get('language')
 
     if not code or not language:
-        conn.close()
         return jsonify({"error": "Code or language not provided"}), 400
 
     if language != 'Python':
         return jsonify({"error": "Only Python is supported in this example"}), 400
 
-    test_inputs = json.loads(problem[5])
-    test_outputs = json.loads(problem[6])
+    test_inputs = json.loads(problem['test_inputs'])
+    test_outputs = json.loads(problem['test_outputs'])
     results = []
     all_correct = True
-    verdict = "Accepted" 
+    verdict = "Accepted"
 
     for test_input, expected_output in zip(test_inputs, test_outputs):
         try:
-            processed_input = test_input
             with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as temp_f:
                 temp_f.write(code)
                 temp_file_name = temp_f.name
 
             process = subprocess.run(
                 ['python', temp_file_name],
-                input=processed_input,
+                input=test_input,
                 text=True,
                 capture_output=True,
                 timeout=5
@@ -162,7 +155,7 @@ def submit_code(problem_id):
                 else:
                     verdict = "Wrong Answer"
                     all_correct = False
-                
+
                 results.append({
                     "input": test_input,
                     "expected_output": expected_output,
@@ -195,20 +188,15 @@ def submit_code(problem_id):
             all_correct = False
             verdict = f"Error: {str(e)}"
 
-    cur.execute("SELECT solved FROM problems WHERE id = ?", (problem_id,))
-    was_solved = cur.fetchone()[0]
-
+    # Update attempts and solved in MongoDB
+    update_fields = {"$inc": {"attempts": 1}}
     if all_correct:
-        cur.execute("UPDATE problems SET attempts = attempts + 1, solved = 1 WHERE id = ?", (problem_id,))
-    elif was_solved == 0:
-        cur.execute("UPDATE problems SET attempts = attempts + 1 WHERE id = ?", (problem_id,))
-    
-    conn.commit()
-    conn.close()
+        update_fields["$set"] = {"solved": 1}
+    problems.update_one({"_id": ObjectId(problem_id)}, update_fields)
 
+    # Logging
     timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    problem_id = problem[0]
-    problem_title = problem[1]
+    problem_title = problem['title']
     status = "Success" if all_correct else f"Failure ({verdict})"
     log_entry = f"Problem ID: {problem_id}, Title: {problem_title}, Date and Time: {timestamp}, Status: {status}\n"
     f.write(log_entry)
@@ -219,11 +207,14 @@ def submit_code(problem_id):
 @app.route('/save_note/<int:problem_id>', methods=['POST'])
 def save_note(problem_id):
     note = request.form.get('note', '')
-    conn = sqlite3.connect("problems.db")
-    cur = conn.cursor()
-    cur.execute("UPDATE problems SET note = ? WHERE id = ?", (note, problem_id))
-    conn.commit()
-    conn.close()
+    result = db.problems.update_one(
+        {"id": int(problem_id)},
+        {"$set": {"note": note}}
+    )
+    
+    if result.matched_count == 0:
+        return jsonify({"success": False, "error": "Problem not found"}), 404
+
     return jsonify({"success": True})
 
 @app.route('/newproblem')
@@ -251,35 +242,37 @@ def add_problem():
         if len(test_inputs) < 3 or len(test_outputs) < 3:
             return jsonify({"success": False, "error": "At least 3 test cases are required"}), 400
 
-        conn = sqlite3.connect("problems.db")
-        cur = conn.cursor()
-        cur.execute("SELECT MAX(id) FROM problems")
-        max_id = cur.fetchone()[0]
-        new_id = (max_id if max_id is not None else 0) + 1
+        max_problem = problems.find_one(sort=[("id", -1)])
+        new_id = (max_problem['id'] if max_problem else 0) + 1
 
-        cur.execute("""
-            INSERT INTO problems (id, title, description, points, topic, test_inputs, test_outputs,attempts,solved,platformname,link,note)
-            VALUES (?, ?, ?, ?, ?, ?, ?,?,?,?,?,?)
-        """, (new_id, title, description, int(points), topic, json.dumps(test_inputs), json.dumps(test_outputs),0,0, platform, platform_link,'add your notes here'))
+        problem_doc = {
+            "id": new_id,
+            "title": title,
+            "description": description,
+            "points": int(points),
+            "topic": topic,
+            "test_inputs": test_inputs,
+            "test_outputs": test_outputs,
+            "attempts": 0,
+            "solved": 0,
+            "platformname": platform,
+            "link": platform_link,
+            "note": "add your notes here"
+        }
 
-        conn.commit()
-        conn.close()
+        problems.insert_one(problem_doc)
 
         return jsonify({"success": True})
 
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route('/problem/<int:problem_id>/edit', methods=['GET', 'POST'])
+@app.route('/problem/<problem_id>/edit', methods=['GET', 'POST'])
 def edit_problem(problem_id):
     if 'admin' not in session:
         return redirect(url_for('admin_login', redirect=request.url))
 
-    conn = sqlite3.connect("problems.db")
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM problems WHERE id = ?", (problem_id,))
-    problem = cur.fetchone()
-    conn.close()
+    problem = problems.find_one({"id": int(problem_id)})
 
     if problem is None:
         flash("Problem not found.", "error")
@@ -293,27 +286,32 @@ def edit_problem(problem_id):
             topic = request.form.get('topic')
             test_inputs = request.form.get('test_inputs')
             test_outputs = request.form.get('test_outputs')
+
             if not all([title, description, points, topic, test_inputs, test_outputs]):
                 flash("All fields are required.", "error")
                 return render_template('edit_problem.html', problem=problem)
+
             try:
                 test_inputs = json.loads(test_inputs) if test_inputs else []
                 test_outputs = json.loads(test_outputs) if test_outputs else []
             except json.JSONDecodeError:
                 flash("Test inputs and outputs must be valid JSON.", "error")
                 return render_template('edit_problem.html', problem=problem)
+
             if len(test_inputs) < 3 or len(test_outputs) < 3:
                 flash("At least 3 test cases are required.", "error")
                 return render_template('edit_problem.html', problem=problem)
-            conn = sqlite3.connect("problems.db")
-            cur = conn.cursor()
-            cur.execute("""
-                UPDATE problems 
-                SET title = ?, description = ?, points = ?, topic = ?, test_inputs = ?, test_outputs = ?
-                WHERE id = ?
-            """, (title, description, int(points), topic, json.dumps(test_inputs), json.dumps(test_outputs), problem_id))
-            conn.commit()
-            conn.close()
+            update_result = problems.update_one(
+                {"id": int(problem_id)},
+                {"$set": {
+                    "title": title,
+                    "description": description,
+                    "points": int(points),
+                    "topic": topic,
+                    "test_inputs": test_inputs,
+                    "test_outputs": test_outputs
+                }}
+            )
 
             flash("Problem updated successfully!", "success")
             return redirect(url_for('frontpage'))
@@ -326,14 +324,12 @@ def edit_problem(problem_id):
 
 @app.route('/stats')
 def stats():
-    conn = sqlite3.connect("problems.db")
-    cur = conn.cursor()
-
-    cur.execute("SELECT SUM(attempts) FROM problems")
-    total_submissions = cur.fetchone()[0] or 0
-
-    cur.execute("SELECT COUNT(*) FROM problems WHERE solved = 1")
-    successful_submissions = cur.fetchone()[0]
+    pipeline = [
+        {"$group": {"_id": None, "total_attempts": {"$sum": "$attempts"}}}
+    ]
+    result = list(problems.aggregate(pipeline))
+    total_submissions = result[0]["total_attempts"] if result else 0
+    successful_submissions = problems.count_documents({"solved": 1})
 
     success_percentage = (successful_submissions / total_submissions * 100) if total_submissions > 0 else 0
     success_percentage = round(success_percentage, 2)
@@ -341,17 +337,13 @@ def stats():
     failure_percentage = 100 - success_percentage if total_submissions > 0 else 0
     failure_percentage = round(failure_percentage, 2)
 
-    cur.execute("""
-    SELECT points, COUNT(*) 
-    FROM problems 
-    WHERE solved = 1 
-    GROUP BY points
-    """)
-    rows = cur.fetchall()
-    point_distribution = {str(point): count for point, count in rows}
+    pipeline = [
+        {"$match": {"solved": 1}},
+        {"$group": {"_id": "$points", "count": {"$sum": 1}}}
+    ]
+    rows = list(problems.aggregate(pipeline))
+    point_distribution = {str(row["_id"]): row["count"] for row in rows}
     point_distribution = json.dumps(point_distribution)
-
-    conn.close()
 
     submission_log = []
     log_file_path = "C:\\Users\\aanuu\\Downloads\\TL_DEV_MINI\\CP_tracker\\log.txt"
